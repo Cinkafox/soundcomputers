@@ -27,8 +27,7 @@ function processMusic()
     end
 end
 
-processMusic()
-while false do
+while true do
     pcall(processMusic)
     print("Some shit is happened now! restarting the application")
     sleep(1)
