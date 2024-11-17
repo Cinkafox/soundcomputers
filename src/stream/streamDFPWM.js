@@ -1,13 +1,14 @@
 import { PassThrough } from 'stream';
 import ffmpeg from "fluent-ffmpeg";
 import { StreamOutput } from '@dank074/fluent-ffmpeg-multistream-ts';
-import StreamBuffer from '../types/StreamBuffer';
+import { Encoder } from '../dfpwm/index.js';
+import { Transform } from 'stream';
 
 /**
  * 
  * @param {*} input 
  * @param {[string]} options 
- * @returns {Promise<StreamBuffer>}
+ * @returns {Promise<Transform>}
  */
 export default function (input, options = []){
     return new Promise((resolve, reject) => {
@@ -28,7 +29,7 @@ export default function (input, options = []){
         }
 
         try {
-            const tunnel = new PassThrough()
+            const encoder = new Encoder()
 
             command = ffmpeg(input)
             .addOption('-loglevel', '0')
@@ -42,11 +43,11 @@ export default function (input, options = []){
                 reject('cannot play audio ' + err.message + " " + stdout + " " + stderr)
             })
             .on('stderr', console.error)
-            .audioCodec('pcm_s16le')
-            .format('wav')
-            .output(StreamOutput(tunnel).url)
+            .audioCodec('pcm_s8')
+            .format('s8')
+            .output(StreamOutput(encoder).url)
             .noVideo()
-            .audioChannels(2)
+            .audioChannels(1)
             .audioFrequency(48000);
 
             if(isHttpUrl) {
@@ -64,8 +65,9 @@ export default function (input, options = []){
             command.addOptions(options)
             command.run();
 
-            resolve(new StreamBuffer(tunnel))
-            
+            encoder.command = command;
+
+            resolve(encoder)
         } catch(e) {
             command = undefined;
             reject("cannot convert audio " + e.message);

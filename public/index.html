@@ -3,12 +3,24 @@
 <head>
   <meta charset='utf-8'>
   <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-  <title>Page Title</title>
+  <title>Control panel</title>
   <meta name='viewport' content='width=device-width, initial-scale=1'>
   <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
   <script src='main.js'></script>
 </head>
 <body>
-  
+  <div id="mainContainer">
+    <div id ="loadContainer">
+      <input id="loadInput"/>
+      <button id="loadButton" onclick="loadClicked()">Load!</button>
+    </div>
+    <button id="clearButton" onclick="clearClicked()">Clear!</button>
+    <h3 id="message"></h3>
+    <h3 id="uri"></h3>
+  </div>
+  <script>
+    const message = document.getElementById("uri");
+    message.innerText = "wget run " + window.location.href + "scripts/ws.lua ws://" + window.location.host ;
+  </script>
 </body>
 </html>

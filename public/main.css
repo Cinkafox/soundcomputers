@@ -1,0 +1,33 @@
+body{
+    font-family: 'Arial', sans-serif;
+    background-color: #111111;
+}
+#mainContainer{
+    background-color: #223344;
+    border-radius: 5px;
+    margin: 5%;
+    padding: 2%;
+    text-align: center;
+}
+
+#loadContainer{
+    margin-top: 0;
+    margin-left: 0;
+    margin-bottom: 10px;
+}
+
+#clearButton{
+    width: 100%;
+}
+
+#loadButton{
+    width: 10%;
+}
+#loadInput{
+    width: 89%;
+}
+
+#message,#uri{
+    background-color: white;
+    border-radius: 5px;
+}
