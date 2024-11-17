@@ -1,9 +1,9 @@
 import path from 'path';
-import fs from 'fs';
-import { convertMP3UrlToDFPWM } from './convert.js';
-import { fileURLToPath } from 'url';
 import express from 'express';
-import SoundCommand from './types/SoundCommand.js';
+import WebSocket from "ws"
+import { fileURLToPath } from 'url';
+import streamDFPWM from './src/stream/streamDFPWM';
+import StreamBuffer from './src/types/StreamBuffer';
 
 const PORT = 3000;
 
@@ -11,61 +11,34 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 
+/**
+ * @type {StreamBuffer}
+ */
+let sb;
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-let currCommand = new SoundCommand("","", true);
+app.get('/load', async (req, res) => {
+    console.log(req.query.path)
+    sb = await streamDFPWM(req.query.path, [])
+    res.send("well")
+});
 
-const outputDir = path.resolve(__dirname, 'converted_files');
-if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir);
-}
+var server = app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});
 
-// Endpoint to start the conversion
-app.post('/convert', async (req, res) => {
-    const { mp3Url } = req.body;
-    const dateNow = Date.now();
-    if (!mp3Url) return res.status(400).send('MP3 URL is required');
-  
-    try {
-      const outputPath = path.join(outputDir, `output-${dateNow}.dfpwm`);
-      await convertMP3UrlToDFPWM(mp3Url, outputPath);
-      res.json({ message: 'Conversion successful!', filePath: path.basename(outputPath) });
-    } catch (error) {
-      res.status(500).json({ error: 'Conversion failed', details: error.message });
-    }
-  });
-  
-  // Endpoint to list converted files
-  app.get('/files', (req, res) => {
-    const files = fs.readdirSync(outputDir).map(file => ({
-      name: file,
-      url: `/converted_files/${file}`
-    }));
-    res.json(files);
-  });
-  
-  // Serve converted files
-  app.use('/converted_files', express.static(outputDir));
+var ws = new WebSocket.Server({server})
 
-  app.get('/control',(req,res)=>{
-    if(req.query.clear === "true"){
-      res.json({clear:true})
-      currCommand = new SoundCommand("","", true);
-      return;
-    }
-    let path = req.query.path;
+ws.on("connection",(e)=>{
+  console.log("Connected another client!")
+  e.send("Hello!")
+  e.on("message",(m)=>{
     
-    if(path == undefined){
-      res.json(currCommand);
-      return;
-    }
-    currCommand = new SoundCommand(path, Date.now(), false);
-    res.json({"pasted": path})
   })
-
-  // Start the server
-  app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-  });
+  e.on('close',(code,reason)=>{
+    console.log("Disconected client " + code + " " + reason)
+  })
+})
