@@ -1,7 +1,6 @@
 import { PassThrough } from 'stream';
 import ffmpeg from "fluent-ffmpeg";
 import { StreamOutput } from '@dank074/fluent-ffmpeg-multistream-ts';
-import { Encoder } from '../dfpwm/index.js';
 import { Transform } from 'stream';
 
 /**
@@ -29,12 +28,13 @@ export default function (input, options = []){
         }
 
         try {
-            const encoder = new Encoder()
+            const encoder = new PassThrough()
 
             command = ffmpeg(input)
             .addOption('-loglevel', '0')
             .addOption('-fflags', 'nobuffer')
             .addOption('-analyzeduration', '0')
+            .addOption('-af', "asetpts=PTS,arealtime,asetpts=PTS")
             .on('end', () => {
                 command = undefined;
             })
@@ -43,8 +43,8 @@ export default function (input, options = []){
                 reject('cannot play audio ' + err.message + " " + stdout + " " + stderr)
             })
             .on('stderr', console.error)
-            .audioCodec('pcm_s8')
-            .format('s8')
+            .audioCodec('dfpwm')
+            .format('dfpwm')
             .output(StreamOutput(encoder).url)
             .noVideo()
             .audioChannels(1)

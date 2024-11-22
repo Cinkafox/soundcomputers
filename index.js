@@ -5,7 +5,6 @@ import { fileURLToPath } from 'url';
 import streamDFPWM from './src/stream/streamDFPWM.js';
 
 const PORT = 3000;
-const delay = ms => new Promise(res => setTimeout(res, ms));
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,26 +35,8 @@ function sendAll(data){
   });
 }
 
-let buffer = [];
-let isEmpty = true;
-
 function clear(){
   encoder?.command?.kill();
-  buffer = [];
-  isEmpty = true;
-}
-
-async function playChunk(){
-  let content;
-  while((content = buffer.shift()) != undefined){
-    let chunk = content[1];
-    let duration = content[0] * 1000 - 10;
-    
-    sendAll(chunk);
-    await delay(duration)
-  }
-  console.log("done")
-  isEmpty = true;
 }
 
 async function playMusic(data) {
@@ -68,14 +49,7 @@ async function playMusic(data) {
 
 async function playStream(stream) {
   stream.on("data",(chunk)=>{
-    var duration = chunk.length * 8 / 48000;
-
-    buffer.push([duration, chunk]);
-
-    if(isEmpty){
-      playChunk();
-      isEmpty = !isEmpty
-    }
+    sendAll(chunk)
   })
 }
 

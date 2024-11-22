@@ -3,9 +3,11 @@ local args = {...}
 local dfpwm = require("cc.audio.dfpwm")
 local decoder = dfpwm.make_decoder()
 local speaker = peripheral.find("speaker")
+local debug = false;
  
 if not speaker then
     print("DOLBOEB BLYAT KOLONKY DAI!")
+    shell.run("attach", "left", "speaker")
     return
 end
 
@@ -27,7 +29,11 @@ function processMusic()
     end
 end
 
-while true do
+if debug then
+    processMusic()
+end
+
+while not debug do
     pcall(processMusic)
     print("Some shit is happened now! restarting the application")
     sleep(1)

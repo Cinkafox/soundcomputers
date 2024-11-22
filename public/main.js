@@ -31,3 +31,7 @@ async function clearClicked(){
 
     printMessage(jsonData);
 }
+
+function copy(text) {
+    navigator.clipboard.writeText(text);
+}
